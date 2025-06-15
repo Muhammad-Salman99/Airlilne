@@ -1,49 +1,133 @@
-package src;
 import javax.swing.*;
+import java.awt.*;
+import java.sql.*;
+import java.util.HashMap;
 
 public class BookFlight extends JFrame {
 
-    public BookFlight() {
-        setTitle("Book Flight");
-        setSize(400, 300);
-        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-        setLocationRelativeTo(null);
-        setLayout(null);
+private JComboBox<String> flightCombo;
+private JComboBox<Integer> customerIdCombo;
+private JButton bookBtn;
 
-        JLabel label = new JLabel("Welcome to the Book Flight Page");
-        label.setBounds(80, 30, 250, 30);
-        add(label);
+// Maps displayed flight info to flight ID
+private HashMap<String, Integer> flightMap = new HashMap<>();
 
-        // Sample inputs
-        JLabel flightIdLabel = new JLabel("Flight ID:");
-        flightIdLabel.setBounds(50, 80, 100, 25);
-        add(flightIdLabel);
+public BookFlight() {
+	setTitle("Book Flight");
+	setSize(600, 400);
+	setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+	setLocationRelativeTo(null);
 
-        JTextField flightIdField = new JTextField();
-        flightIdField.setBounds(150, 80, 150, 25);
-        add(flightIdField);
+	JPanel panel = new JPanel(new BorderLayout());
+	panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
-        JLabel customerIdLabel = new JLabel("Customer ID:");
-        customerIdLabel.setBounds(50, 120, 100, 25);
-        add(customerIdLabel);
+	JLabel titleLabel = new JLabel("Book a Flight", SwingConstants.CENTER);
+	titleLabel.setFont(new Font("Arial", Font.BOLD, 22));
+	panel.add(titleLabel, BorderLayout.NORTH);
 
-        JTextField customerIdField = new JTextField();
-        customerIdField.setBounds(150, 120, 150, 25);
-        add(customerIdField);
+	JPanel formPanel = new JPanel(new GridLayout(4, 2, 15, 15));
+	formPanel.setBorder(BorderFactory.createEmptyBorder(20, 50, 20, 50));
 
-        JButton bookBtn = new JButton("Book");
-        bookBtn.setBounds(150, 170, 100, 30);
-        add(bookBtn);
+	JLabel flightLabel = new JLabel("Select Flight:");
+	flightLabel.setFont(new Font("Arial", Font.PLAIN, 16));
+	flightCombo = new JComboBox<>();
+	flightCombo.setFont(new Font("Arial", Font.PLAIN, 16));
 
-        bookBtn.addActionListener(e -> {
-            String flightId = flightIdField.getText();
-            String customerId = customerIdField.getText();
-            // Booking logic placeholder
-            JOptionPane.showMessageDialog(this, "Flight " + flightId + " booked for customer " + customerId + "!");
-        });
-    }
+	JLabel customerLabel = new JLabel("Select Customer:");
+	customerLabel.setFont(new Font("Arial", Font.PLAIN, 16));
+	customerIdCombo = new JComboBox<>();
+	customerIdCombo.setFont(new Font("Arial", Font.PLAIN, 16));
 
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new BookFlight().setVisible(true));
-    }
+	formPanel.add(flightLabel);
+	formPanel.add(flightCombo);
+	formPanel.add(customerLabel);
+	formPanel.add(customerIdCombo);
+
+	panel.add(formPanel, BorderLayout.CENTER);
+
+	JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
+
+	bookBtn = new JButton("Book Flight");
+	bookBtn.setFont(new Font("Arial", Font.PLAIN, 16));
+	bookBtn.addActionListener(e -> bookFlight());
+
+	JButton cancelBtn = new JButton("Cancel");
+	cancelBtn.setFont(new Font("Arial", Font.PLAIN, 16));
+	cancelBtn.addActionListener(e -> dispose());
+
+	buttonPanel.add(bookBtn);
+	buttonPanel.add(cancelBtn);
+
+	panel.add(buttonPanel, BorderLayout.SOUTH);
+	add(panel);
+
+	loadFlightDetails();
+	loadCustomerIds();
+}
+
+private void loadFlightDetails() {
+	try (Connection conn = DBConnection.getConnection()) {
+		String sql = "SELECT flight_id, flight_number, departure, destination, airline FROM flights";
+		Statement stmt = conn.createStatement();
+		ResultSet rs = stmt.executeQuery(sql);
+
+		while (rs.next()) {
+			int id = rs.getInt("flight_id");
+			String display = rs.getString("flight_number") + " (" +
+					rs.getString("departure") + " → " +
+					rs.getString("destination") + ") - " +
+					rs.getString("airline");
+			flightMap.put(display, id);
+			flightCombo.addItem(display);
+		}
+	} catch (SQLException e) {
+		showError("Error loading flight details: " + e.getMessage());
+	}
+}
+
+private void loadCustomerIds() {
+	try (Connection conn = DBConnection.getConnection()) {
+		String sql = "SELECT customer_id FROM customers";
+		Statement stmt = conn.createStatement();
+		ResultSet rs = stmt.executeQuery(sql);
+
+		while (rs.next()) {
+			customerIdCombo.addItem(rs.getInt("customer_id"));
+		}
+	} catch (SQLException e) {
+		showError("Error loading customers: " + e.getMessage());
+	}
+}
+
+private void bookFlight() {
+	String selectedFlight = (String) flightCombo.getSelectedItem();
+	Integer flightId = selectedFlight != null ? flightMap.get(selectedFlight) : null;
+	Integer customerId = (Integer) customerIdCombo.getSelectedItem();
+
+	if (flightId == null || customerId == null) {
+		showError("Please select both flight and customer.");
+		return;
+	}
+
+	try (Connection conn = DBConnection.getConnection()) {
+		String insertSql = "INSERT INTO bookings (flight_id, customer_id, booking_date) VALUES (?, ?, NOW())";
+		PreparedStatement insertStmt = conn.prepareStatement(insertSql);
+		insertStmt.setInt(1, flightId);
+		insertStmt.setInt(2, customerId);
+		int rows = insertStmt.executeUpdate();
+
+		if (rows > 0) {
+			JOptionPane.showMessageDialog(this, "Booking successful!",
+					"Success", JOptionPane.INFORMATION_MESSAGE);
+			new BoardingPass(flightId, customerId).setVisible(true);
+			dispose();
+		}
+	} catch (SQLException e) {
+		showError("Error creating booking: " + e.getMessage());
+	}
+}
+
+private void showError(String message) {
+	JOptionPane.showMessageDialog(this, message, "Error", JOptionPane.ERROR_MESSAGE);
+}
 }

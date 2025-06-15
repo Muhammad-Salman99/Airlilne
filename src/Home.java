@@ -1,86 +1,62 @@
-package src;
 import javax.swing.*;
+import java.awt.*;
 
 public class Home extends JFrame {
+public Home() {
+	setTitle("Airline Management System");
+	setSize(800, 600);
+	setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+	setLocationRelativeTo(null);
 
-    public Home() {
-        setTitle("Airline Management - Home");
-        setSize(450, 520); // Increased height to fit the new button
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setLocationRelativeTo(null);
-        setLayout(null);
+	JPanel panel = new JPanel(new BorderLayout());
+	panel.setBorder(BorderFactory.createEmptyBorder(30, 30, 30, 30));
 
-        // Welcome message
-        JOptionPane.showMessageDialog(this, "Welcome to the Airline Management System Home Page!");
+	// Header
+	JLabel titleLabel = new JLabel("✈️ Airline Management System", SwingConstants.CENTER);
+	titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 28));
+	titleLabel.setForeground(new Color(25, 50, 112));
+	panel.add(titleLabel, BorderLayout.NORTH);
 
-        // Buttons
-        JButton addCustomerBtn = new JButton("Add Customer");
-        addCustomerBtn.setBounds(120, 30, 200, 30);
-        add(addCustomerBtn);
+	// Center Panel with buttons
+	JPanel centerPanel = new JPanel(new GridBagLayout());
+	centerPanel.setBorder(BorderFactory.createEmptyBorder(50, 0, 50, 0));
+	GridBagConstraints gbc = new GridBagConstraints();
+	gbc.gridwidth = GridBagConstraints.REMAINDER;
+	gbc.insets = new Insets(20, 0, 20, 0);
 
-        JButton boardingPassBtn = new JButton("Boarding Pass");
-        boardingPassBtn.setBounds(120, 70, 200, 30);
-        add(boardingPassBtn);
+	JButton loginBtn = new JButton("Login");
+	styleButton(loginBtn);
 
-        JButton customerFlightsBtn = new JButton("Customer Flights");
-        customerFlightsBtn.setBounds(120, 110, 200, 30);
-        add(customerFlightsBtn);
+	JButton exitBtn = new JButton("Exit");
+	styleButton(exitBtn);
 
-        JButton cancelTicketBtn = new JButton("Cancel Ticket");
-        cancelTicketBtn.setBounds(120, 150, 200, 30);
-        add(cancelTicketBtn);
+	centerPanel.add(loginBtn, gbc);
+	centerPanel.add(exitBtn, gbc);
 
-        JButton flightInfoBtn = new JButton("Flight Info");
-        flightInfoBtn.setBounds(120, 190, 200, 30);
-        add(flightInfoBtn);
+	panel.add(centerPanel, BorderLayout.CENTER);
 
-        JButton bookFlightBtn = new JButton("Book Flight");
-        bookFlightBtn.setBounds(120, 230, 200, 30); // New button
-        add(bookFlightBtn);
+	// Footer
+	JLabel footerLabel = new JLabel("© 2025 Airline Management System", SwingConstants.CENTER);
+	footerLabel.setFont(new Font("Segoe UI", Font.ITALIC, 12));
+	footerLabel.setForeground(Color.GRAY);
+	panel.add(footerLabel, BorderLayout.SOUTH);
 
-        JButton logoutBtn = new JButton("Logout");
-        logoutBtn.setBounds(120, 270, 200, 30); // Shifted down
-        add(logoutBtn);
+	add(panel);
 
-        // Action Listeners
-        addCustomerBtn.addActionListener(e -> {
-            JOptionPane.showMessageDialog(this, "Redirecting to Add Customer...");
-            new AddCustomer().setVisible(true);
-        });
+	// Event Listeners
+	loginBtn.addActionListener(e -> {
+		new Login().setVisible(true);
+		dispose();
+	});
 
-        boardingPassBtn.addActionListener(e -> {
-            JOptionPane.showMessageDialog(this, "Redirecting to Boarding Pass...");
-            new BoardingPass().setVisible(true);
-        });
+	exitBtn.addActionListener(e -> System.exit(0));
+}
 
-        customerFlightsBtn.addActionListener(e -> {
-            JOptionPane.showMessageDialog(this, "Redirecting to Customer Flights...");
-            new JourneyDtails().setVisible(true); // Assuming corrected class name
-        });
-
-        cancelTicketBtn.addActionListener(e -> {
-            JOptionPane.showMessageDialog(this, "Redirecting to Cancel Ticket...");
-            new Cancel().setVisible(true);
-        });
-
-        flightInfoBtn.addActionListener(e -> {
-            JOptionPane.showMessageDialog(this, "Redirecting to Flight Info...");
-            new FlightInfo().setVisible(true);
-        });
-
-        bookFlightBtn.addActionListener(e -> {
-            JOptionPane.showMessageDialog(this, "Redirecting to Book Flight...");
-            new BookFlight().setVisible(true); // New frame for booking flight
-        });
-
-        logoutBtn.addActionListener(e -> {
-            JOptionPane.showMessageDialog(this, "You have been logged out.");
-            new Login().setVisible(true);
-            this.dispose();
-        });
-    }
-
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new Home().setVisible(true));
-    }
+private void styleButton(JButton button) {
+	button.setPreferredSize(new Dimension(220, 45));
+	button.setFont(new Font("Segoe UI", Font.PLAIN, 16));
+	button.setFocusPainted(false);
+	button.setBackground(new Color(70, 130, 180));
+	button.setForeground(Color.WHITE);
+}
 }
