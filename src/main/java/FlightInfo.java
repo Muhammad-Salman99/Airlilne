@@ -46,7 +46,7 @@ public FlightInfo() {
 
 private void loadFlights() {
 	try (Connection conn = DBConnection.getConnection()) {
-		String sql = "SELECT * FROM flight";
+		String sql = "SELECT * FROM flights";
 		Statement stmt = conn.createStatement();
 		ResultSet rs = stmt.executeQuery(sql);
 
@@ -57,13 +57,14 @@ private void loadFlights() {
 
 		while (rs.next()) {
 			model.addRow(new Object[]{
-					rs.getInt("f_code"),
-					rs.getString("f_name"),
-					rs.getString("source"),
+					rs.getInt("flight_id"),
+					rs.getString("flight_number"),
+					rs.getString("departure"),
 					rs.getString("destination"),
-//					sdf.format(rs.getTimestamp("departure_time")),
-//					sdf.format(rs.getTimestamp("arrival_time")),
-//					"$" + rs.getDouble("price")
+					sdf.format(rs.getTimestamp("departure_time")),
+					sdf.format(rs.getTimestamp("arrival_time")),
+					rs.getString("airline"),
+					"$" + rs.getDouble("price")
 			});
 		}
 

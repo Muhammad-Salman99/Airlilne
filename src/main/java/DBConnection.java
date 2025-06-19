@@ -2,7 +2,7 @@
 import java.sql.*;
 
 public class DBConnection {
-private static final String DB_URL = "jdbc:mysql://localhost:3306/airlinemanagementsystem";
+private static final String DB_URL = "jdbc:mysql://localhost:3306/airlinemanagement";
 private static final String DB_USER = "root";
 private static final String DB_PASS = "sumsung.";
 
